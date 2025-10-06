@@ -1,0 +1,190 @@
+```mermaid
+erDiagram
+    Organization ||--o{ User : employs
+    Organization ||--o{ OrganizationRelationship : "has relationships"
+    Organization {
+        uuid id PK
+        string code "MSK, HL"
+        string name "Maersk Ltd"
+        enum organizationType "PLATFORM_OPERATOR,MLO,FORWARDER,NVOCC"
+        boolean isPlatformOperator "Only one org with this flag"
+        string scacCode "Standard Carrier Alpha Code"
+        string taxId
+        string contactEmail
+        string contactPhone
+        string billingEmail
+        string address
+        string city
+        string country
+        string postalCode
+        json billingInfo "Payment methods, terms"
+        enum accountStatus "ACTIVE,SUSPENDED,TRIAL,CLOSED"
+        timestamp contractStartDate
+        timestamp contractEndDate
+        decimal creditLimit "For customer orgs"
+        json settings "Org-specific configuration"
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    OrganizationRelationship {
+        uuid id PK
+        uuid parentOrgId FK "Platform operator"
+        uuid childOrgId FK "Customer org"
+        enum relationshipType "CUSTOMER,PARTNER,SUBSIDIARY,AGENT"
+        enum status "PENDING,ACTIVE,SUSPENDED,TERMINATED"
+        json contractTerms "Commercial agreement"
+        decimal creditLimit "Booking credit limit"
+        json allowedPorts "Which ports they can book"
+        json allowedVessels "Which vessels they can book"
+        json rateAgreement "Pricing structure"
+        uuid approvedByUserId FK
+        timestamp approvedAt
+        timestamp effectiveFrom
+        timestamp effectiveTo
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    User ||--o{ Session : "has sessions"
+    User ||--o{ UserRole : "has roles"
+    User }o--|| Organization : "belongs to"
+    User {
+        uuid id PK
+        string email UK
+        string passwordHash
+        string firstName
+        string lastName
+        string jobTitle
+        string phoneNumber
+        string mobileNumber
+        uuid organizationId FK
+        boolean isActive
+        boolean emailVerified
+        string verificationToken
+        string resetPasswordToken
+        timestamp resetPasswordExpires
+        timestamp lastLoginAt
+        string lastLoginIp
+        json preferences "UI settings, notifications"
+        string language "en,sv,de"
+        string timezone
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    Role {
+        uuid id PK
+        string code UK "PLATFORM_ADMIN,ORG_ADMIN,OPERATOR,BOOKING_CLERK,VIEWER"
+        string name "Platform Administrator"
+        string description "Full system access across all orgs"
+        enum scope "PLATFORM,ORGANIZATION,SELF"
+        int level "Hierarchy: 0=platform_admin, 50=org_admin, 100=user"
+        boolean isSystemRole "Cannot be deleted"
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    Permission {
+        uuid id PK
+        string code UK "booking.create,booking.view_all_orgs,voyage.create,org.manage_users"
+        string resource "booking,voyage,organization,user"
+        string action "create,read,update,delete,confirm,view_all"
+        enum scope "PLATFORM,ORGANIZATION,SELF"
+        string description "Can view bookings across all organizations"
+        timestamp createdAt
+    }
+
+    UserRole }o--|| User : "assigned to"
+    UserRole }o--|| Role : "is a"
+    UserRole {
+        uuid id PK
+        uuid userId FK
+        uuid roleId FK
+        uuid organizationId FK "Role applies to this org (null = all orgs)"
+        uuid grantedByUserId FK
+        timestamp grantedAt
+        timestamp expiresAt
+        timestamp createdAt
+    }
+
+    RolePermission }o--|| Role : "grants"
+    RolePermission }o--|| Permission : "has"
+    RolePermission {
+        uuid id PK
+        uuid roleId FK
+        uuid permissionId FK
+        timestamp createdAt
+    }
+
+    Session {
+        uuid id PK
+        uuid userId FK
+        uuid organizationId FK "Session scoped to org"
+        string token UK
+        string refreshToken UK
+        string ipAddress
+        string userAgent
+        json deviceInfo "Browser, OS, etc"
+        timestamp expiresAt
+        timestamp lastActivityAt
+        timestamp createdAt
+    }
+
+    DataAccessPolicy {
+        uuid id PK
+        uuid organizationId FK "Which org this policy applies to"
+        uuid userId FK "Specific user (null = all users in org)"
+        uuid roleId FK "Specific role (null = all roles)"
+        enum resourceType "BOOKING,VOYAGE,CONTAINER,REPORT"
+        enum accessLevel "FULL,READ_ONLY,OWN_ONLY,TEAM_ONLY,NONE"
+        json filters "Additional constraints (ports, vessels, date ranges)"
+        enum priority "10,50,100 (higher = more specific, wins)"
+        boolean isActive
+        string reason "Why this policy exists"
+        uuid createdByUserId FK
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    Organization ||--o{ DataAccessPolicy : "has policies"
+
+    AuditLog {
+        uuid id PK
+        uuid userId FK
+        uuid organizationId FK "Which org context"
+        string action "login,booking.create,user.grant_role"
+        string resource "booking,user,organization"
+        string resourceId "UUID of affected resource"
+        json oldValue "Before change"
+        json newValue "After change"
+        string ipAddress
+        string userAgent
+        enum severity "INFO,WARNING,ERROR,CRITICAL"
+        boolean crossOrgAction "Did user access another org's data?"
+        timestamp createdAt
+    }
+
+    User ||--o{ AuditLog : "generates"
+    Organization ||--o{ AuditLog : "scopes"
+
+    ApiKey {
+        uuid id PK
+        uuid organizationId FK
+        string name "Production API Key"
+        string keyPrefix "pk_live_"
+        string keyHash "Hashed key value"
+        json permissions "Which API endpoints allowed"
+        json rateLimit "Requests per minute"
+        string[] allowedIpAddresses
+        boolean isActive
+        timestamp lastUsedAt
+        timestamp expiresAt
+        uuid createdByUserId FK
+        timestamp createdAt
+        timestamp revokedAt
+        uuid revokedByUserId FK
+    }
+
+    Organization ||--o{ ApiKey : "owns"
+```
