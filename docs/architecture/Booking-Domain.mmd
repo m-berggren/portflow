@@ -1,0 +1,165 @@
+```mermaid
+erDiagram
+    Vessel ||--o{ Voyage : operates
+    Vessel {
+        uuid id PK
+        string code UK "XPAGI"
+        string name
+        string imo UK
+        string mmsi UK
+        string callSign
+        string flag "Cyprus"
+        int teuCapacity
+        decimal deadWeight
+        decimal length
+        decimal width
+        decimal draft
+        string owner
+        string operator
+        string iceclass
+    }
+
+    Voyage ||--o{ PortCall : includes
+    Voyage {
+        uuid id PK
+        uuid vesselId FK
+        string vesselCode FK "XPAGI"
+        int year "25"
+        int voyageCount "21"
+        enum direction "N,S"
+        string code UK "XPAGI2521S"
+        date estimatedStart
+        date estimatedEnd
+        enum status "ACTIVE,COMPLETED,CANCELLED"
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    Port ||--o{ PortCall : receives
+    Port {
+        uuid id PK
+        string code UK "SEGOT"
+        string name "Gothenburg"
+        string country "Sweden"
+        string countryCode "SE"
+        decimal latitude
+        decimal longitude
+        string timezone "Europe/Stockholm"
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    Terminal ||--o{ PortCall : serves
+    Terminal {
+        uuid id PK
+        string code UK "APM_SEGOT"
+        string name "APM Terminals Gothenburg"
+        uuid portId FK
+        string integrationType "API,EDI,MANUAL"
+        json integrationConfig "Endpoint URLs, auth keys"
+        string vesselPlannerPhone
+        string vesselPlannerEmail
+        string stevedorePhone
+        string stevedoreEmail
+        string gatePhone
+        string gateEmail
+        boolean isActive
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    PortCall ||--o{ Booking : "receives bookings"
+    PortCall {
+        uuid id PK
+        uuid voyageId FK
+        uuid portId FK
+        uuid terminalIds FK "One or several IDs"
+        int sequenceNumber "Stop order: 1,2,3..."
+        enum operationType "LOAD,DISCHARGE,BOTH,TRANSIT"
+        timestamp eta
+        timestamp etd
+        timestamp ata
+        timestamp atd
+        boolean isActive "Bookings are tied to portCall so never delete, just inactivate"
+        string notes
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    Booking ||--o{ Container : "consists of"
+    Booking {
+        uuid id PK
+        string reference UK
+        uuid portCallId FK
+        uuid ownerOrganizationId FK "Owner of booking"
+        uuid operatorOrganizationId FK "Platform operator"
+        uuid createdByUserId FK "External domain reference"
+        string customerReference "Customer's own booking ref"
+        string customerPurchaseOrder "Customer's invoice ref"
+        string pod
+        string tod
+        string pol
+        string tol
+        string shuntedTerminal
+        string transhipment
+        string motherVessel
+        string motherVoyage
+        string slotOwner "MSK, CMA, HL ..."
+        string slotAccount "MSK, CMA, HL ..."
+        string mlo "MSK, CMA, HL ..."
+        string OBL "Bill of Lading number"
+        string receiver
+        string shipper
+        string consignee
+        string notifyParty
+        enum status "DRAFT,CONFIRMED,GATE_IN,LOADED,CANCELLED"
+        enum terminalSyncStatus "NOT_SENT,PENDING,REJECTED,UPDATED_BY_TERMINAL"
+        string finalDest "SGSIN, CNSHA ..."
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    Container {
+        uuid id PK
+        uuid bookingId FK
+        string containerNo
+        string sealNo
+        enum status "LA, MT"
+        enum isoContainerType "45G1, 42G0,22G1 ..."
+        string userContainerType "40HC, 22DV ..."
+        enum containerSize "20GP,40GP,40HC,45HC ..."
+        decimal grossWeight "Tonnes"
+        decimal vgm "Verified Gross Mass"
+        decimal netWeight "Cargo weight"
+        decimal tare "Container weight"
+        string goodsDescription
+        decimal packageCount
+        string packageType "PK, RL ..."
+        boolean isReefer
+        decimal tempMax
+        decimal tempMin
+        decimal tempOpt
+        boolean isDangerous
+        string unNumber "UN1234"
+        string imoClass "3,8,9"
+        string dgPackingGroup "I,II,III"
+        decimal flashPoint
+        boolean isOog "Out of Gauge"
+        decimal ooh "Over Height"
+        decimal olf "Over Length Front"
+        decimal ola "Over Length Aft (rear)"
+        decimal owp "Over Width Port side"
+        decimal ows "Over Width Starboard side"
+        boolean isFlatrack "Flat Rack"
+        decimal frGroup "For empty bundled flat racks: 1, 2, 3 ..."
+        string cargoStatus "C, T1, N"
+        string mrn "Movement Reference Number"
+        string hsCode "Harmonized System code"
+        string stowPos "Stowage position"
+        string slotKilled "For OOG cargo, known after loading"
+        timestamp gateInAt
+        timestamp loadedAt
+        timestamp createdAt
+        timestamp updatedAt
+    }
+```
