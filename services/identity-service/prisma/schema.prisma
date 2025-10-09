@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id            Int              @id @default(autoincrement())
+  name          String
+  code          String           @unique
+  type          OrganizationType
+  contactEmail  String
+  contactPhone  String?
+  isActive      Boolean          @default(true)
+  teuAllocation Int?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  users         User[]
+  apiKeys       ApiKey[]
+}
+
+enum OrganizationType {
+  ADMIN
+  OPERATOR
+  CUSTOMER
+}
+
+model User {
+  id             Int          @id @default(autoincrement())
+  email          String       @unique
+  username       String       @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  phoneNumber    String?
+  isActive       Boolean      @default(true)
+  lastLoginAt    DateTime?
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  roles          Role[]
+}
+
+model Role {
+  id    Int      @id @default(autoincrement())
+  name  RoleName @unique
+  users User[]
+}
+
+enum RoleName {
+    ADMIN
+    OPERATOR
+    CUSTOMER
+}
+
+model ApiKey {
+  id             Int          @id @default(autoincrement())
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  keyHash        String       @unique
+  isActive       Boolean      @default(true)
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  createdAt      DateTime     @default(now())
+  revokedAt      DateTime?
+}
