@@ -1,6 +1,6 @@
 {
 	"name": "api-gateway",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "API Gateway for Portflow container booking platform",
 	"author": "Marcus Berggren, berggren.me@gmail.com",
 	"private": true,
@@ -22,8 +22,13 @@
 	},
 	"dependencies": {
 		"@nestjs/common": "^11.0.1",
+		"@nestjs/config": "^4.0.2",
 		"@nestjs/core": "^11.0.1",
+		"@nestjs/microservices": "^11.1.6",
 		"@nestjs/platform-express": "^11.0.1",
+		"@portflow/shared-auth": "workspace:*",
+		"joi": "^18.0.1",
+		"nats": "^2.29.3",
 		"reflect-metadata": "^0.2.2",
 		"rxjs": "^7.8.1"
 	},
