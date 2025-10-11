@@ -9,27 +9,27 @@ import {
 export class RegisterDto {
 	@IsEmail()
 	@IsNotEmpty()
-	email: string;
+	email!: string;
 
 	@IsString()
 	@IsNotEmpty()
 	@MinLength(3)
-	username: string;
+	username!: string;
 
 	@IsString()
 	@IsNotEmpty()
 	@MinLength(8)
-	password: string;
+	password!: string;
 
 	@IsString()
 	@IsNotEmpty()
-	firstName: string;
+	firstName!: string;
 
 	@IsString()
 	@IsNotEmpty()
-	lastName: string;
+	lastName!: string;
 
 	@IsInt()
 	@IsNotEmpty()
-	organizationId: number;
+	organizationId!: number;
 }

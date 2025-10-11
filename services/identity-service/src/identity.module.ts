@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 import { SharedAuthModule } from '@portflow/shared-auth';
 import Joi from 'joi';
 import { ApiKeysModule } from './api-keys/api-keys.module';
@@ -21,21 +20,13 @@ import { UserService } from './user/user.service';
 			envFilePath: '.env', // Used when running natively outside container
 			ignoreEnvFile: process.env.DOCKER === 'true', // Ignore if running through docker-compose file
 			validationSchema: Joi.object({
-				JWT_SECRET: Joi.string().required(),
-				IDENTITY_SERVICE_PORT: Joi.number().default(3001),
-				CORS_ORIGIN: Joi.string().required(),
-				NODE_ENV: Joi.string().required(),
-				NATS_URL: Joi.string().required(),
+				JWT_PUBLIC_KEY: Joi.string().required(),
+				JWT_PRIVATE_KEY: Joi.string().required(),
+				JWT_EXPIRES_IN: Joi.string().required(),
+				JWT_PUBLIC_API_KEY: Joi.string().required(),
+				JWT_PRIVATE_API_KEY: Joi.string().required(),
+				JWT_API_EXPIRES_IN: Joi.string().required(),
 			}),
-		}),
-		JwtModule.registerAsync({
-			useFactory: (configService: ConfigService) => ({
-				secret: configService.getOrThrow<string>('JWT_SECRET'),
-				signOptions: {
-					expiresIn: configService.get<string>('JWT_EXPIRES_IN', '24h'),
-				},
-			}),
-			inject: [ConfigService],
 		}),
 		PrismaModule,
 		SharedAuthModule, // Shared local library for authentication checks
@@ -45,7 +36,7 @@ import { UserService } from './user/user.service';
 		OrganizationsModule,
 		ApiKeysModule,
 	],
-	controllers: [AuthController, NatsTestController],
-	providers: [AuthService, UserService],
+	controllers: [],
+	providers: [UserService],
 })
 export class IdentityModule {}
