@@ -1,1 +1,12 @@
+# IDE
 .idea/
+.vscode/
+
+# Environment
+.env
+.env.development
+
+# Packages and builds
+node_modules/
+dist/
+*.log
