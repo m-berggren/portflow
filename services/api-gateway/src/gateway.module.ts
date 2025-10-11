@@ -9,8 +9,6 @@ import {
 import Joi from 'joi';
 import { createNatsClient } from './config/nats-client.factory';
 import { AuthController } from './controllers/auth.controller';
-import { GatewayController } from './gateway.controller';
-import { GatewayService } from './gateway.service';
 
 @Module({
 	imports: [
